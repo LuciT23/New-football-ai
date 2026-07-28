@@ -1,0 +1,118 @@
+<!DOCTYPE html> 
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football AI Predictor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen p-4 flex flex-col items-center justify-center font-sans">
+
+    <div class="w-full max-w-md bg-slate-800 rounded-2xl shadow-2xl p-6 border border-slate-700">
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-emerald-400">⚽ Football AI Predictor</h1>
+            <p class="text-slate-400 text-xs mt-1">Superliga Romania - Analiză Inteligentă</p>
+        </div>
+
+        <!-- Formular -->
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Echipa Gazdă (Home)</label>
+                <input id="home" type="text" placeholder="ex: FCSB" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Echipa Oaspete (Away)</label>
+                <input id="away" type="text" placeholder="ex: CFR Cluj" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1 text-center">Cotă 1</label>
+                    <input id="cota1" type="number" step="0.01" value="2.10" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-center text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1 text-center">Cotă X</label>
+                    <input id="cotaX" type="number" step="0.01" value="3.20" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-center text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1 text-center">Cotă 2</label>
+                    <input id="cota2" type="number" step="0.01" value="3.50" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-center text-sm">
+                </div>
+            </div>
+
+            <button onclick="calculeaza()" id="btn" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg mt-2">
+                Calculează Pronostic
+            </button>
+        </div>
+
+        <!-- Rezultate -->
+        <div id="rezultate" class="hidden mt-6 space-y-3 pt-4 border-t border-slate-700">
+            <h2 id="meci-titlu" class="text-center font-bold text-slate-200 text-sm"></h2>
+            
+            <div class="grid grid-cols-3 gap-2 text-center">
+                <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-700">
+                    <span class="block text-xs text-slate-400">Șansă 1</span>
+                    <span id="p1" class="text-lg font-bold text-emerald-400">0%</span>
+                </div>
+                <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-700">
+                    <span class="block text-xs text-slate-400">Șansă X</span>
+                    <span id="pX" class="text-lg font-bold text-amber-400">0%</span>
+                </div>
+                <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-700">
+                    <span class="block text-xs text-slate-400">Șansă 2</span>
+                    <span id="p2" class="text-lg font-bold text-rose-400">0%</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 text-center flex justify-between items-center">
+                <span class="text-xs text-slate-300">Peste 2.5 Goluri:</span>
+                <span id="p25" class="text-base font-bold text-indigo-400">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PUNE LINK-UL TĂU DE RENDER AICI:
+        const API_URL = "https://new-football-ai.onrender.com"; 
+
+        async function calculeaza() {
+            const btn = document.getElementById('btn');
+            btn.innerText = "Se calculează...";
+            btn.disabled = true;
+
+            const payload = {
+                home: document.getElementById('home').value,
+                away: document.getElementById('away').value,
+                cota1: parseFloat(document.getElementById('cota1').value),
+                cotaX: parseFloat(document.getElementById('cotaX').value),
+                cota2: parseFloat(document.getElementById('cota2').value)
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/predict`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+
+                document.getElementById('meci-titlu').innerText = data.meci;
+                document.getElementById('p1').innerText = data.procente["1"] + "%";
+                document.getElementById('pX').innerText = data.procente["X"] + "%";
+                document.getElementById('p2').innerText = data.procente["2"] + "%";
+                document.getElementById('p25').innerText = data.procente["peste_2_5"] + "%";
+
+                document.getElementById('rezultate').classList.remove('hidden');
+            } catch (err) {
+                alert("Eroare la conectarea cu serverul AI! Verifică link-ul Render.");
+            } finally {
+                btn.innerText = "Calculează Pronostic";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
