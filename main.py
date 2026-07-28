@@ -1,10 +1,20 @@
 from fastapi import FastAPI, HTTPException 
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import GradientBoostingClassifier
 
 app = FastAPI(title="Football AI Prediction API")
+
+# Activează accesul de pe mobil / GitHub Pages
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Variable globale pentru modele și istoric
 model_sol = None
