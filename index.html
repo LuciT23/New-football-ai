@@ -19,12 +19,16 @@
         <div class="space-y-4">
             <div>
                 <label class="block text-xs font-semibold text-slate-300 mb-1">Echipa Gazdă (Home)</label>
-                <input id="home" type="text" placeholder="ex: FCSB" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-emerald-500">
+                <select id="home" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-emerald-500 text-white">
+                    <option value="">Se încarcă echipele...</option>
+                </select>
             </div>
 
             <div>
                 <label class="block text-xs font-semibold text-slate-300 mb-1">Echipa Oaspete (Away)</label>
-                <input id="away" type="text" placeholder="ex: CFR Cluj" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-emerald-500">
+                <select id="away" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-emerald-500 text-white">
+                    <option value="">Se încarcă echipele...</option>
+                </select>
             </div>
 
             <div class="grid grid-cols-3 gap-2">
@@ -74,17 +78,51 @@
     </div>
 
     <script>
-        // PUNE LINK-UL TĂU DE RENDER AICI:
+        // PUNE LINK-UL TĂU REAL DE RENDER AICI:
         const API_URL = "https://new-football-ai.onrender.com"; 
 
+        // Încarcă echipele la deschiderea paginii
+        async function incarcaEchipe() {
+            try {
+                const response = await fetch(`${API_URL}/echipe`);
+                const data = await response.json();
+                
+                const selectHome = document.getElementById('home');
+                const selectAway = document.getElementById('away');
+
+                selectHome.innerHTML = '<option value="">Selectează Gazda</option>';
+                selectAway.innerHTML = '<option value="">Selectează Oaspetele</option>';
+
+                data.echipe.forEach(echipa => {
+                    selectHome.innerHTML += `<option value="${echipa}">${echipa}</option>`;
+                    selectAway.innerHTML += `<option value="${echipa}">${echipa}</option>`;
+                });
+            } catch (err) {
+                console.error("Eroare la încărcarea echipelor:", err);
+            }
+        }
+
         async function calculeaza() {
+            const home = document.getElementById('home').value;
+            const away = document.getElementById('away').value;
+
+            if (!home || !away) {
+                alert("Te rugăm să selectezi ambele echipe!");
+                return;
+            }
+
+            if (home === away) {
+                alert("Echipa gazdă și cea oaspete trebuie să fie diferite!");
+                return;
+            }
+
             const btn = document.getElementById('btn');
             btn.innerText = "Se calculează...";
             btn.disabled = true;
 
             const payload = {
-                home: document.getElementById('home').value,
-                away: document.getElementById('away').value,
+                home: home,
+                away: away,
                 cota1: parseFloat(document.getElementById('cota1').value),
                 cotaX: parseFloat(document.getElementById('cotaX').value),
                 cota2: parseFloat(document.getElementById('cota2').value)
@@ -107,12 +145,15 @@
 
                 document.getElementById('rezultate').classList.remove('hidden');
             } catch (err) {
-                alert("Eroare la conectarea cu serverul AI! Verifică link-ul Render.");
+                alert("Eroare la conectarea cu serverul AI!");
             } finally {
                 btn.innerText = "Calculează Pronostic";
                 btn.disabled = false;
             }
         }
+
+        // Pornim încărcarea echipelor la lansare
+        incarcaEchipe();
     </script>
 </body>
 </html>
