@@ -184,3 +184,13 @@ def predict(meci: MeciRequest):
             "peste_2_5": round(float(prob_p25 * 100), 1)
         }
     }
+@app.get("/echipe") 
+def get_echipe():
+    try:
+        df = pd.read_csv("ROU.csv")
+        echipe_home = df['Home'].dropna().unique()
+        echipe_away = df['Away'].dropna().unique()
+        echipe_toate = sorted(list(set(echipe_home) | set(echipe_away)))
+        return {"echipe": echipe_toate}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
